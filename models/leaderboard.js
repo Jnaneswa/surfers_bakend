@@ -2,12 +2,22 @@ const mongoose = require("mongoose");
 
 const LeaderboardSchema = new mongoose.Schema({
     rank: Number,
-    studentId: String,
-    name: String,
-    score: Number,
+    studentId: {
+        type: String,
+        required: true,
+        unique : true,
+    },
+    name: {
+        type: String,
+        required : true,
+    },
+    score: {
+        type: Number,
+        required : true,
+    },
     phoneNumber: {
         type: String,
-        required: false
+        required: false,
     }
 });
 

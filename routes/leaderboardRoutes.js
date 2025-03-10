@@ -26,29 +26,43 @@ router.get("/", async (req, res) => {
 });
 
 // Add a new leaderboard entry
-    router.post("/", auth, async (req, res) => {
-        try {
-            const { name, score, studentId, phoneNumber } = req.body;
+router.post("/", auth, async (req, res) => {
+    try {
+        const { name, score, studentId, phoneNumber } = req.body;
 
-            if (!name || score === undefined) {
-                return res.status(400).json({ message: "Name and score are required." });
+        if (!name || score === undefined) {
+            return res.status(400).json({ message: "Name and score are required." });
+        }
+
+        let existingEntry = await Leaderboard.findOne({ studentId: studentId });
+
+        if (existingEntry) {
+            // Compare scores and update only if new score is higher
+            if (score > existingEntry.score) {
+                existingEntry.score = score;
+                await existingEntry.save();
+                await updateRanks();
+                return res.status(200).json({ message: "Score updated", entry: existingEntry });
+            } else {
+                return res.status(200).json({ message: "New score is not higher, no update needed", entry: existingEntry });
             }
-
+        } else {
             const newEntry = new Leaderboard({
                 name,
                 studentId,
                 score: Number(score),
                 phoneNumber
             });
-
-            const savedEntry = await newEntry.save();
-            await updateRanks(); // Update ranks after adding a new entry
-
-            res.status(201).json(savedEntry);
-        } catch (error) {
-            res.status(400).json({ message: error.message });
         }
-    });
+
+        const savedEntry = await newEntry.save();
+        await updateRanks(); // Update ranks after adding a new entry
+
+        res.status(201).json(savedEntry);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
 
 // Update leaderboard entry by ID (score update)
 router.put("/:id", auth, async (req, res) => {

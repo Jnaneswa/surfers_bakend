@@ -5,6 +5,10 @@ const LeaderboardSchema = new mongoose.Schema({
     studentId: String,
     name: String,
     score: Number,
+    phoneNumber: {
+        type: String,
+        required: false
+    }
 });
 
 const Leaderboard = mongoose.model("Leaderboard", LeaderboardSchema);
